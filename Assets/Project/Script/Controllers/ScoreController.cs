@@ -20,7 +20,6 @@ namespace Gazeus.DesafioMatch3
         private void IncreaseScore() {
             _currentScore += _scorePerTile;
             EventSystem.OnScoreUpdated(_currentScore);
-            print("New Score: " + _currentScore);
         }
     }
 }
