@@ -13,8 +13,9 @@ namespace Gazeus.DesafioMatch3.Core
         private List<int> _specialTypes;
         private int _tileCount;
 
-        private static readonly int ROWBREAKER = 4;
-        private static readonly int COLUMNBREAKER = 5;
+        private readonly int ROWBREAKER = 4;
+        private readonly int COLUMNBREAKER = 5;
+        private readonly int BOMB = 6;
 
         public bool IsValidMovement(int fromX, int fromY, int toX, int toY)
         {
@@ -48,7 +49,7 @@ namespace Gazeus.DesafioMatch3.Core
         public List<List<Tile>> StartGame(int boardWidth, int boardHeight)
         {
             _tilesTypes = new List<int> { 0, 1, 2, 3 };
-            _specialTypes = new List<int> { 4, 5 };
+            _specialTypes = new List<int> { 4, 5, 6 };
             _boardTiles = CreateBoard(boardWidth, boardHeight, _tilesTypes);
 
             return _boardTiles;
@@ -155,7 +156,7 @@ namespace Gazeus.DesafioMatch3.Core
             return boardSequences;
         }
 
-        private static List<List<Tile>> CopyBoard(List<List<Tile>> boardToCopy)
+        private List<List<Tile>> CopyBoard(List<List<Tile>> boardToCopy)
         {
             List<List<Tile>> newBoard = new(boardToCopy.Count);
             for (int y = 0; y < boardToCopy.Count; y++)
@@ -178,9 +179,10 @@ namespace Gazeus.DesafioMatch3.Core
             return tileType;
         }
 
-        private static bool IsSpecialTile(int tileType) {
+        private bool IsSpecialTile(int tileType) {
             if (tileType == COLUMNBREAKER ||
-                tileType == ROWBREAKER) {
+                tileType == ROWBREAKER ||
+                tileType == BOMB) {
                 return true;
             }
             return false;
@@ -229,7 +231,7 @@ namespace Gazeus.DesafioMatch3.Core
             return board;
         }
 
-        private static List<List<bool>> FindMatches(List<List<Tile>> newBoard)
+        private List<List<bool>> FindMatches(List<List<Tile>> newBoard)
         {
             List<List<bool>> matchedTiles = new();
             for (int y = 0; y < newBoard.Count; y++)
@@ -273,37 +275,77 @@ namespace Gazeus.DesafioMatch3.Core
             return FindSpecialTiles(matchedTiles,newBoard);
         }
 
-        private static List<List<bool>> FindSpecialTiles(List<List<bool>> matchedTiles, List<List<Tile>> newBoard) {
+        private Vector2Int CheckRowNeighbors(int tileType, int x, int y, List<List<bool>> matchedTiles, List<List<Tile>> newBoard) {
+            if ( x > 0 && newBoard[y][x - 1].Type == tileType )
+                return new Vector2Int(x - 1, y);
+            if (x + 3 < matchedTiles[y].Count && newBoard[y][x + 3].Type == tileType)
+                return new Vector2Int(x + 3, y);
+            return -Vector2Int.one;
+        }
 
+        private Vector2Int CheckColumnNeighbors(int tileType, int x, int y, List<List<bool>> matchedTiles, List<List<Tile>> newBoard) {
+            if ( y > 0 && newBoard[y - 1][x].Type == tileType )
+                return new Vector2Int(x, y - 1);
+            if ( y + 3 < matchedTiles.Count && newBoard[y + 3][x].Type == tileType )
+                return new Vector2Int(x, y + 3);
+            return -Vector2Int.one;
+        }
+
+        void MarkAllMatchingTiles(int targetType, List<List<bool>> matchedTiles, List<List<Tile>> newBoard) {
+            for ( int y = 0; y < matchedTiles.Count; y++ ) {
+                for ( int x = 0; x < matchedTiles[y].Count; x++ ) {
+                    if ( newBoard[y][x].Type == targetType ) {
+                        matchedTiles[y][x] = true;
+                    }
+                }
+            }
+        }
+
+        private List<List<bool>> FindSpecialTiles(List<List<bool>> matchedTiles, List<List<Tile>> newBoard) {
 
             for ( int y = 0; y < matchedTiles.Count; y++ ) {
                 for ( int x = 0; x < matchedTiles[y].Count; x++ ) {
                     if ( matchedTiles[y][x] ) {
+                        Vector2Int specialTileIndex;
+                        //Checks neighboring tiles of a 3-Tile row combination
                         if ( x + 2 < matchedTiles[y].Count &&
                             matchedTiles[y][x + 1] &&
                             matchedTiles[y][x + 2] ) {
-
-                            if (( x > 0 && newBoard[y][x - 1].Type == ROWBREAKER ) ||
-                                ( x + 3 < matchedTiles[y].Count && newBoard[y][x + 3].Type == ROWBREAKER )) {
-
-                                //Found ROWBREAKER destroy entire ROW
+                            
+                            specialTileIndex = CheckRowNeighbors(ROWBREAKER, x, y, matchedTiles, newBoard);
+                            if (specialTileIndex != -Vector2Int.one) {
+                                //Found ROWBREAKER: destroy entire ROW
                                 for ( int j = 0; j < newBoard[y].Count; j++ )
-                                        matchedTiles[y][j] = true;                                    
+                                    matchedTiles[y][j] = true;
+                            } else {
+                                specialTileIndex = CheckRowNeighbors(BOMB, x, y, matchedTiles, newBoard);
+                                if ( specialTileIndex != -Vector2Int.one ) {
+                                    //Found BOMB: destroy all equals
+                                    matchedTiles[specialTileIndex.y][specialTileIndex.x] = true;
+                                    MarkAllMatchingTiles(newBoard[y][x].Type, matchedTiles, newBoard);
+                                }
                             }
 
                             x += 2;
                         }
 
+                        //Checks neighboring tiles of a 3-Tile column combination
                         if ( y + 2 < matchedTiles.Count &&
                             matchedTiles[y + 1][x] &&
                             matchedTiles[y + 2][x] ) {
 
-                            if (( y > 0 && newBoard[y - 1][x].Type == COLUMNBREAKER ) || 
-                                ( y + 3 < matchedTiles.Count && newBoard[y + 3][x].Type == COLUMNBREAKER) ){
-
-                                //Found COLUMNBREAKER destroy entire COLUMN
+                            specialTileIndex = CheckColumnNeighbors(COLUMNBREAKER, x, y, matchedTiles, newBoard);
+                            if ( specialTileIndex != -Vector2Int.one ) {
+                                //Found COLUMNBREAKER: destroy entire COLUMN
                                 for ( int j = 0; j < newBoard[y].Count; j++ )
                                     matchedTiles[j][x] = true;
+                            } else {
+                                specialTileIndex = CheckColumnNeighbors(BOMB, x, y, matchedTiles, newBoard);
+                                if ( specialTileIndex != -Vector2Int.one ) {
+                                    //Found BOMB: destroy all equals
+                                    matchedTiles[specialTileIndex.y][specialTileIndex.x] = true;
+                                    MarkAllMatchingTiles(newBoard[y][x].Type, matchedTiles, newBoard);
+                                }
                             }
 
                             y += 2;
@@ -314,7 +356,7 @@ namespace Gazeus.DesafioMatch3.Core
             return matchedTiles;
         }
 
-        private static bool HasMatch(List<List<bool>> list)
+        private bool HasMatch(List<List<bool>> list)
         {
             for (int y = 0; y < list.Count; y++)
             {
