@@ -82,6 +82,7 @@ namespace Gazeus.DesafioMatch3.Views
                 Vector2Int position = matchedPosition[i];
                 Destroy(_tiles[position.y][position.x]);
                 _tiles[position.y][position.x] = null;
+                EventSystem.OnTileDestroyed?.Invoke();
             }
 
             return DOVirtual.DelayedCall(0.2f, () => { });
