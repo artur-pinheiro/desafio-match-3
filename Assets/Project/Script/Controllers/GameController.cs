@@ -56,6 +56,7 @@ namespace Gazeus.DesafioMatch3.Controllers
             {
                 sequence.onComplete += () => onComplete();
             }
+            EventSystem.OnComboPerformed?.Invoke(index);
         }
 
         private void OnTileClick(int x, int y)

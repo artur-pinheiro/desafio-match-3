@@ -7,7 +7,7 @@ namespace Gazeus.DesafioMatch3 {
 
         [SerializeField] private float _size; 
         [SerializeField] private float _rotation;
-        [SerializeField] private float _duraiton;
+        [SerializeField] private float _duration;
         [SerializeField] private TextMeshProUGUI _scoreText; 
         private Vector3 originalScale;
         private Vector3 originalRotation;
@@ -29,19 +29,21 @@ namespace Gazeus.DesafioMatch3 {
             _scoreText.transform.localScale = originalScale;
             _scoreText.transform.localEulerAngles = originalRotation;
 
-            _scoreText.transform
-                .DOScale(originalScale * _size, _duraiton) 
-                .SetEase(Ease.OutBack) 
-                .OnComplete(() => {
-                    _scoreText.transform.DOScale(originalScale, 0.1f)
-                        .SetEase(Ease.InBack);
-                });
+            Sequence scoreAnimation = DOTween.Sequence();
 
-            _scoreText.transform
-                .DORotate(originalRotation + new Vector3(0, 0, _rotation), _duraiton) 
-                .OnComplete(() => {
-                    _scoreText.transform.DORotate(originalRotation, 0.1f);
-                });
+            Tween scaleUp = _scoreText.transform.DOScale(originalScale * _size, _duration).SetEase(Ease.OutBack);
+            Tween rotate = _scoreText.transform.DORotate(originalRotation + new Vector3(0, 0, _rotation), _duration);
+
+            scoreAnimation.Append(scaleUp);
+            scoreAnimation.Join(rotate);
+
+            Tween scaleDown = _scoreText.transform.DOScale(originalScale, 0.1f).SetEase(Ease.InBack);
+            Tween rotateBack = _scoreText.transform.DORotate(originalRotation, 0.1f);
+
+            scoreAnimation.Append(scaleDown);
+            scoreAnimation.Join(rotateBack);
+
+            scoreAnimation.Play();
         }
     }
 }

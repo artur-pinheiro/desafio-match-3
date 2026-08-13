@@ -8,6 +8,7 @@ namespace Gazeus.DesafioMatch3 {
 
         public static Action<int> OnScoreUpdated;
 
+        public static Action<int> OnComboPerformed;
 
     }
 }
