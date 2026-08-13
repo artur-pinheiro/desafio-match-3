@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.ParticleSystem;
 
 namespace Gazeus.DesafioMatch3.Views
 {
@@ -99,7 +98,7 @@ namespace Gazeus.DesafioMatch3.Views
 
         private void SpawnParticles(Vector3 position) {
             _particlePool ??= GetComponent<ParticlePool>();
-            _particlePool.SpawnParticle(position, Quaternion.identity);
+            _particlePool.SpawnParticle(position, Quaternion.Euler(0,180,0));
         }
 
         public Tween MoveTiles(List<MovedTileInfo> movedTiles)
