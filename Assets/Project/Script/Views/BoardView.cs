@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using DG.Tweening;
+﻿using DG.Tweening;
 using Gazeus.DesafioMatch3.Models;
 using Gazeus.DesafioMatch3.ScriptableObjects;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.ParticleSystem;
 
 namespace Gazeus.DesafioMatch3.Views
 {
@@ -15,6 +16,11 @@ namespace Gazeus.DesafioMatch3.Views
         [SerializeField] private GridLayoutGroup _boardContainer;
         [SerializeField] private TilePrefabRepository _tilePrefabRepository;
         [SerializeField] private TileSpotView _tileSpotPrefab;
+
+        [Header("Particle Pool")]
+        [SerializeField] private ParticlePool _particlePool;
+        [SerializeField] private Vector3 _positionOffset = Vector3.zero; 
+
 
         private GameObject[][] _tiles;
         private TileSpotView[][] _tileSpots;
@@ -80,12 +86,20 @@ namespace Gazeus.DesafioMatch3.Views
             for (int i = 0; i < matchedPosition.Count; i++)
             {
                 Vector2Int position = matchedPosition[i];
+
+                SpawnParticles(_tiles[position.y][position.x].transform.position);              
+
                 Destroy(_tiles[position.y][position.x]);
                 _tiles[position.y][position.x] = null;
                 EventSystem.OnTileDestroyed?.Invoke();
-            }
+                }
 
             return DOVirtual.DelayedCall(0.2f, () => { });
+        }
+
+        private void SpawnParticles(Vector3 position) {
+            _particlePool ??= GetComponent<ParticlePool>();
+            _particlePool.SpawnParticle(position, Quaternion.identity);
         }
 
         public Tween MoveTiles(List<MovedTileInfo> movedTiles)
