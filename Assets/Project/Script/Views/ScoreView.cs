@@ -24,6 +24,8 @@ namespace Gazeus.DesafioMatch3 {
         }
 
         private void AnimateScoreText(int score) {
+
+            StopAnimation();
             _scoreText.text = score.ToString();
 
             _scoreText.transform.localScale = originalScale;
@@ -44,6 +46,11 @@ namespace Gazeus.DesafioMatch3 {
             scoreAnimation.Join(rotateBack);
 
             scoreAnimation.Play();
+        }
+
+        public void StopAnimation() {
+            DOTween.Kill(_scoreText);
+            _scoreText.transform.DOKill();
         }
     }
 }
