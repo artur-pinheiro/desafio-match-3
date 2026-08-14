@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Gazeus.DesafioMatch3.Core
-{
-    public class GameService
-    {
+namespace Gazeus.DesafioMatch3.Core {
+    public class GameService {
+
+        [SerializeField][Range(0, 1)] private float _specialTileRate = 0.05f;
+
         private List<List<Tile>> _boardTiles;
         private List<int> _tilesTypes;
         private List<int> _specialTypes;
@@ -173,7 +174,7 @@ namespace Gazeus.DesafioMatch3.Core
         }
 
         private int TrySwapToSpecial(int tileType) {
-            if (Random.Range(0f,1f) <= 0.05f) {
+            if (Random.Range(0f,1f) <= _specialTileRate) {
                 return _specialTypes[Random.Range(0, _specialTypes.Count)];
             }
             return tileType;
@@ -224,6 +225,7 @@ namespace Gazeus.DesafioMatch3.Core
                     }
 
                     board[y][x].Id = _tileCount++;
+                    //Check if this tile will be replaced by a Special Tile
                     board[y][x].Type = TrySwapToSpecial(noMatchTypes[Random.Range(0, noMatchTypes.Count)]);
                 }
             }
@@ -272,7 +274,7 @@ namespace Gazeus.DesafioMatch3.Core
                 }
             }
 
-            return FindSpecialTiles(matchedTiles,newBoard);
+            return FindSpecialTiles(matchedTiles,newBoard); //After finding the regular matches, we look for Special Tiles around them and add their effects
         }
 
         private Vector2Int CheckRowNeighbors(int tileType, int x, int y, List<List<bool>> matchedTiles, List<List<Tile>> newBoard) {
