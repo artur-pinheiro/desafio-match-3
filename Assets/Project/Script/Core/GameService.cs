@@ -7,12 +7,18 @@ using Random = UnityEngine.Random;
 namespace Gazeus.DesafioMatch3.Core {
     public class GameService {
 
+        public enum GameType { 
+            Match3 = 3,
+            Match4 = 4            
+        }
+
         [SerializeField][Range(0, 1)] private float _specialTileRate = 0.05f;
 
         private List<List<Tile>> _boardTiles;
         private List<int> _tilesTypes;
         private List<int> _specialTypes;
         private int _tileCount;
+        private GameType _gameType;
 
         private readonly int ROWBREAKER = 4;
         private readonly int COLUMNBREAKER = 5;
@@ -28,27 +34,51 @@ namespace Gazeus.DesafioMatch3.Core {
             {
                 for (int x = 0; x < newBoard[y].Count; x++)
                 {
-                    if (x > 1 &&
-                        newBoard[y][x].Type == newBoard[y][x - 1].Type &&
-                        newBoard[y][x - 1].Type == newBoard[y][x - 2].Type)
-                    {
-                        return true;
-                    }
+                    switch ( _gameType ) {
+                        case GameType.Match3:
+                            if ( x > 1 && 
+                                newBoard[y][x].Type == newBoard[y][x - 1].Type &&
+                                newBoard[y][x - 1].Type == newBoard[y][x - 2].Type ) {
 
-                    if (y > 1 &&
-                        newBoard[y][x].Type == newBoard[y - 1][x].Type &&
-                        newBoard[y - 1][x].Type == newBoard[y - 2][x].Type)
-                    {
-                        return true;
+                                return true;
+                            }
+
+                            if ( y > 1 &&
+                                newBoard[y][x].Type == newBoard[y - 1][x].Type &&
+                                newBoard[y - 1][x].Type == newBoard[y - 2][x].Type ) {
+
+                                return true;
+                            }
+                            break;
+                        case GameType.Match4:
+                            if ( x > 0 &&
+                                newBoard[y][x].Type == newBoard[y][x - 1].Type ) {
+
+                                if ( y > 0 &&
+                                newBoard[y][x].Type == newBoard[y - 1][x].Type ) {
+
+                                    if ( newBoard[y][x].Type == newBoard[y - 1][x - 1].Type ) {
+
+                                        return true;
+                                    }
+                                }
+                            }
+
+                            
+                            break;
+                        default:
+                            return false;                            
                     }
+                    
                 }
             }
 
             return false;
         }
 
-        public List<List<Tile>> StartGame(int boardWidth, int boardHeight)
-        {
+        public List<List<Tile>> StartGame(int boardWidth, int boardHeight)        {
+            _gameType = (GameType)PlayerPrefs.GetInt("GameMode", 3);
+
             _tilesTypes = new List<int> { 0, 1, 2, 3 };
             _specialTypes = new List<int> { 4, 5, 6 };
             _boardTiles = CreateBoard(boardWidth, boardHeight, _tilesTypes);
@@ -132,7 +162,7 @@ namespace Gazeus.DesafioMatch3.Core {
                             int tileType = Random.Range(0, _tilesTypes.Count);
                             Tile tile = newBoard[y][x];
                             tile.Id = _tileCount++;
-                            tile.Type = TrySwapToSpecial(tileType);
+                            tile.Type = _gameType == GameType.Match3 ? TrySwapToSpecial(tileType) : tileType;
                             addedTiles.Add(new AddedTileInfo
                             {
                                 Position = new Vector2Int(x, y),
@@ -225,8 +255,13 @@ namespace Gazeus.DesafioMatch3.Core {
                     }
 
                     board[y][x].Id = _tileCount++;
-                    //Check if this tile will be replaced by a Special Tile
-                    board[y][x].Type = TrySwapToSpecial(noMatchTypes[Random.Range(0, noMatchTypes.Count)]);
+                    
+                    if (_gameType == GameType.Match3) {
+                        //Check if this tile will be replaced by a Special Tile
+                        board[y][x].Type = TrySwapToSpecial(noMatchTypes[Random.Range(0, noMatchTypes.Count)]);
+                    } else {
+                        board[y][x].Type = noMatchTypes[Random.Range(0, noMatchTypes.Count)];
+                    }            
                 }
             }
 
@@ -249,32 +284,59 @@ namespace Gazeus.DesafioMatch3.Core {
             {
                 for (int x = 0; x < newBoard[y].Count; x++)
                 {
-                    if (IsSpecialTile(newBoard[y][x].Type) ) {
-                        continue;
-                    }
 
-                    if ( x > 1 &&
-                        newBoard[y][x].Type == newBoard[y][x - 1].Type &&
-                        newBoard[y][x - 1].Type == newBoard[y][x - 2].Type ) {
+                    switch ( _gameType ) {
+                        case GameType.Match3:
 
-                        matchedTiles[y][x] = true;
-                        matchedTiles[y][x - 1] = true;
-                        matchedTiles[y][x - 2] = true;
-                    }
+                            if ( IsSpecialTile(newBoard[y][x].Type) ) {
+                                continue;
+                            }
 
-                    if (y > 1 &&
-                        newBoard[y][x].Type == newBoard[y - 1][x].Type &&
-                        newBoard[y - 1][x].Type == newBoard[y - 2][x].Type)
-                    {
-                        matchedTiles[y][x] = true;
-                        matchedTiles[y - 1][x] = true;
-                        matchedTiles[y - 2][x] = true;
+                            if ( x > 1 &&
+                                newBoard[y][x].Type == newBoard[y][x - 1].Type &&
+                                newBoard[y][x - 1].Type == newBoard[y][x - 2].Type ) {
 
-                    }
+                                matchedTiles[y][x] = true;
+                                matchedTiles[y][x - 1] = true;
+                                matchedTiles[y][x - 2] = true;
+                            }
+
+                            if ( y > 1 &&
+                                newBoard[y][x].Type == newBoard[y - 1][x].Type &&
+                                newBoard[y - 1][x].Type == newBoard[y - 2][x].Type ) {
+                                matchedTiles[y][x] = true;
+                                matchedTiles[y - 1][x] = true;
+                                matchedTiles[y - 2][x] = true;
+
+                            }
+                            break;
+                        case GameType.Match4:
+                            if ( x > 0 &&
+                                newBoard[y][x].Type == newBoard[y][x - 1].Type ) {
+
+                                if ( y > 0 &&
+                                newBoard[y][x].Type == newBoard[y - 1][x].Type ) {
+
+                                    if ( newBoard[y][x].Type == newBoard[y - 1][x - 1].Type ) {
+
+                                        matchedTiles[y][x] = true;
+                                        matchedTiles[y][x - 1] = true;
+                                        matchedTiles[y - 1][x] = true;
+                                        matchedTiles[y - 1][x - 1] = true;
+                                    }
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }                    
                 }
             }
 
-            return FindSpecialTiles(matchedTiles,newBoard); //After finding the regular matches, we look for Special Tiles around them and add their effects
+            if ( _gameType == GameType.Match3 ) {
+                return FindSpecialTiles(matchedTiles, newBoard); //After finding the regular matches, we look for Special Tiles around them and add their effects
+            } else
+                return matchedTiles;
         }
 
         private Vector2Int CheckRowNeighbors(int tileType, int x, int y, List<List<bool>> matchedTiles, List<List<Tile>> newBoard) {
