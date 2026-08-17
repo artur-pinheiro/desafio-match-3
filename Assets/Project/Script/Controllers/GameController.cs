@@ -1,10 +1,11 @@
-using System;
-using System.Collections.Generic;
 using DG.Tweening;
 using Gazeus.DesafioMatch3.Core;
 using Gazeus.DesafioMatch3.Models;
 using Gazeus.DesafioMatch3.Views;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Gazeus.DesafioMatch3.Controllers
 {
@@ -92,6 +93,10 @@ namespace Gazeus.DesafioMatch3.Controllers
                 _selectedX = x;
                 _selectedY = y;
             }
+        }
+
+        public void QuitGame() {
+            SceneManager.LoadScene("Menu");
         }
     }
 }
