@@ -1,10 +1,13 @@
 ﻿using DG.Tweening;
+using Gazeus.DesafioMatch3.Core;
 using Gazeus.DesafioMatch3.Models;
 using Gazeus.DesafioMatch3.ScriptableObjects;
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using static Gazeus.DesafioMatch3.Core.GameService;
 
 namespace Gazeus.DesafioMatch3.Views
 {
@@ -131,15 +134,96 @@ namespace Gazeus.DesafioMatch3.Views
             return sequence;
         }
 
-        public Tween SwapTiles(int fromX, int fromY, int toX, int toY)
+        public Tween SwapTiles(int fromX, int fromY, int toX, int toY, bool reverse = false)
         {
             Sequence sequence = DOTween.Sequence();
-            sequence.Append(_tileSpots[fromY][fromX].AnimatedSetTile(_tiles[toY][toX]));
-            sequence.Join(_tileSpots[toY][toX].AnimatedSetTile(_tiles[fromY][fromX]));
 
-            (_tiles[toY][toX], _tiles[fromY][fromX]) = (_tiles[fromY][fromX], _tiles[toY][toX]);
+            MatchMode matchMode = (MatchMode) PlayerPrefs.GetInt("MatchMode", 0);
+
+            switch ( matchMode ) {
+                case MatchMode.Swap2:
+                    sequence.Append(_tileSpots[fromY][fromX].AnimatedSetTile(_tiles[toY][toX]));
+                    sequence.Join(_tileSpots[toY][toX].AnimatedSetTile(_tiles[fromY][fromX]));
+
+                    (_tiles[toY][toX], _tiles[fromY][fromX]) = (_tiles[fromY][fromX], _tiles[toY][toX]);
+
+                    break;
+                case MatchMode.Rotate4:
+                    if (!reverse) {
+                        //Move Clockwise
+                        Vector2Int topIndexes = GetTopLeftIndexes(fromX, fromY, toX, toY);
+                        int topLeftX = topIndexes.y, topLeftY = topIndexes.x;
+
+                        if ( topLeftX == -1 || topLeftY == -1 )
+                            break;
+
+                        sequence.Append(_tileSpots[topLeftY][topLeftX].AnimatedSetTile(_tiles[topLeftY + 1][topLeftX]));
+                        sequence.Join(_tileSpots[topLeftY + 1][topLeftX].AnimatedSetTile(_tiles[topLeftY + 1][topLeftX + 1]));
+                        sequence.Join(_tileSpots[topLeftY + 1][topLeftX + 1].AnimatedSetTile(_tiles[topLeftY][topLeftX + 1]));
+                        sequence.Join(_tileSpots[topLeftY][topLeftX + 1].AnimatedSetTile(_tiles[topLeftY][topLeftX]));
+
+                        (_tiles[topLeftY][topLeftX], _tiles[topLeftY + 1][topLeftX], _tiles[topLeftY + 1][topLeftX + 1], _tiles[topLeftY][topLeftX + 1]) =
+                        (_tiles[topLeftY + 1][topLeftX], _tiles[topLeftY + 1][topLeftX + 1], _tiles[topLeftY][topLeftX + 1], _tiles[topLeftY][topLeftX]);
+
+                    } else {
+                        //Reverse movement and Move Back Counter Clockwise
+                        Vector2Int topIndexes = GetTopLeftIndexes(toX, toY, fromX, fromY);
+                        int topLeftX = topIndexes.y, topLeftY = topIndexes.x;
+
+                        if ( topLeftX == -1 || topLeftY == -1 )
+                            break;
+
+                        sequence.Append(_tileSpots[topLeftY][topLeftX].AnimatedSetTile(_tiles[topLeftY][topLeftX + 1]));
+                        sequence.Join(_tileSpots[topLeftY + 1][topLeftX].AnimatedSetTile(_tiles[topLeftY][topLeftX]));
+                        sequence.Join(_tileSpots[topLeftY + 1][topLeftX + 1].AnimatedSetTile(_tiles[topLeftY + 1][topLeftX]));
+                        sequence.Join(_tileSpots[topLeftY][topLeftX + 1].AnimatedSetTile(_tiles[topLeftY + 1][topLeftX + 1]));
+
+                        (_tiles[topLeftY][topLeftX], _tiles[topLeftY + 1][topLeftX], _tiles[topLeftY + 1][topLeftX + 1], _tiles[topLeftY][topLeftX + 1]) =
+                        (_tiles[topLeftY][topLeftX + 1], _tiles[topLeftY][topLeftX], _tiles[topLeftY + 1][topLeftX], _tiles[topLeftY + 1][topLeftX + 1]);
+                    }
+
+                    break;
+                default:
+                    break;
+            }            
 
             return sequence;
+        }
+
+        private Vector2Int GetTopLeftIndexes(int fromX, int fromY, int toX, int toY) {
+
+            int deltaX = toX - fromX;
+            int deltaY = toY - fromY;
+
+            if ( (Mathf.Abs(deltaX) == 1 && deltaY == 0) || // Horizontal adjacency
+                (Mathf.Abs(deltaY) == 1 && deltaX == 0) )   // Vertical adjacency
+            {
+                // Determine the top-left corner based on the direction of movement
+                int topLeftX = 0;
+                int topLeftY = 0;
+
+                if ( deltaX == 0 ) {
+                    if ( deltaY == -1 ) { //upwards
+                        topLeftY = toY;
+                        topLeftX = toX;
+                    } else if ( deltaY == 1 ) { //downwards
+                        topLeftY = fromY;
+                        topLeftX = fromX - 1;
+                    }
+                } else if ( deltaY == 0 ) {
+                    if ( deltaX == -1 ) { // leftward
+                        topLeftY = fromY - 1;
+                        topLeftX = toX;
+                    } else if ( deltaX == 1 ) { // rightward
+                        topLeftY = fromY;
+                        topLeftX = fromX;
+                    }
+                }
+
+                return new Vector2Int(topLeftY, topLeftX);
+            }
+
+            return new Vector2Int(-1, -1);
         }
 
         #region Events

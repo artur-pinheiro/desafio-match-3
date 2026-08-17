@@ -12,6 +12,11 @@ namespace Gazeus.DesafioMatch3.Core {
             Match4 = 4            
         }
 
+        public enum MatchMode {
+            Swap2,
+            Rotate4
+        }
+
         [SerializeField][Range(0, 1)] private float _specialTileRate = 0.05f;
 
         private List<List<Tile>> _boardTiles;
@@ -19,65 +24,141 @@ namespace Gazeus.DesafioMatch3.Core {
         private List<int> _specialTypes;
         private int _tileCount;
         private GameType _gameType;
+        private MatchMode _matchMode;
 
         private readonly int ROWBREAKER = 4;
         private readonly int COLUMNBREAKER = 5;
         private readonly int BOMB = 6;
 
-        public bool IsValidMovement(int fromX, int fromY, int toX, int toY)
-        {
-            List<List<Tile>> newBoard = CopyBoard(_boardTiles);
+        public bool IsValidMovement(int fromX, int fromY, int toX, int toY) {
+            switch ( _matchMode ) {
+                case MatchMode.Swap2:
+                    return Is2SwapValidMovement(fromX, fromY, toX, toY);                    
+                case MatchMode.Rotate4:
+                    return Is4CycleValidMovement(fromX, fromY, toX, toY); ;
+                default:
+                    return false;
+            }
+        }
 
-            (newBoard[toY][toX], newBoard[fromY][fromX]) = (newBoard[fromY][fromX], newBoard[toY][toX]);
-
-            for (int y = 0; y < newBoard.Count; y++)
-            {
-                for (int x = 0; x < newBoard[y].Count; x++)
-                {
+        private bool IsThereAnyMatch(List<List<Tile>> board) {
+            for ( int y = 0; y < board.Count; y++ ) {
+                for ( int x = 0; x < board[y].Count; x++ ) {
                     switch ( _gameType ) {
                         case GameType.Match3:
-                            if ( x > 1 && 
-                                newBoard[y][x].Type == newBoard[y][x - 1].Type &&
-                                newBoard[y][x - 1].Type == newBoard[y][x - 2].Type ) {
+                            if ( x > 1 &&
+                                board[y][x].Type == board[y][x - 1].Type &&
+                                board[y][x - 1].Type == board[y][x - 2].Type ) {
 
                                 return true;
                             }
 
                             if ( y > 1 &&
-                                newBoard[y][x].Type == newBoard[y - 1][x].Type &&
-                                newBoard[y - 1][x].Type == newBoard[y - 2][x].Type ) {
+                                board[y][x].Type == board[y - 1][x].Type &&
+                                board[y - 1][x].Type == board[y - 2][x].Type ) {
 
                                 return true;
                             }
                             break;
                         case GameType.Match4:
                             if ( x > 0 &&
-                                newBoard[y][x].Type == newBoard[y][x - 1].Type ) {
+                                board[y][x].Type == board[y][x - 1].Type ) {
 
                                 if ( y > 0 &&
-                                newBoard[y][x].Type == newBoard[y - 1][x].Type ) {
+                                board[y][x].Type == board[y - 1][x].Type ) {
 
-                                    if ( newBoard[y][x].Type == newBoard[y - 1][x - 1].Type ) {
+                                    if ( board[y][x].Type == board[y - 1][x - 1].Type ) {
 
                                         return true;
                                     }
                                 }
                             }
-
-                            
                             break;
                         default:
-                            return false;                            
+                            return false;
                     }
-                    
+
                 }
             }
 
             return false;
         }
 
+        private bool Is2SwapValidMovement(int fromX, int fromY, int toX, int toY) {
+            List<List<Tile>> newBoard = CopyBoard(_boardTiles);
+
+            (newBoard[toY][toX], newBoard[fromY][fromX]) = (newBoard[fromY][fromX], newBoard[toY][toX]);
+
+            return IsThereAnyMatch(newBoard);
+        }
+
+        private bool Is4CycleValidMovement(int fromX, int fromY, int toX, int toY) {
+
+            List<List<Tile>> newBoard = CopyBoard(_boardTiles);
+
+            Vector2Int topIndexes = GetTopLeftIndexes(newBoard, fromX, fromY, toX, toY);
+            int topLeftX = topIndexes.y, topLeftY = topIndexes.x;
+
+            if ( topLeftX == -1 || topLeftY == -1 )
+                return false;
+
+            (newBoard[topLeftY][topLeftX], newBoard[topLeftY + 1][topLeftX], newBoard[topLeftY + 1][topLeftX + 1], newBoard[topLeftY][topLeftX + 1]) =
+            (newBoard[topLeftY + 1][topLeftX], newBoard[topLeftY + 1][topLeftX + 1], newBoard[topLeftY][topLeftX + 1], newBoard[topLeftY][topLeftX]);
+
+            return IsThereAnyMatch(newBoard);
+        }
+
+        private Vector2Int GetTopLeftIndexes(List<List<Tile>> newBoard, int fromX, int fromY, int toX, int toY) {
+            if ( fromX < 0 || fromX >= newBoard.Count ||
+                    fromY < 0 || fromY >= newBoard.Count ||
+                    toX < 0 || toX >= newBoard.Count ||
+                    toY < 0 || toY >= newBoard.Count ) {
+
+                return Vector2Int.one * -1;
+            }
+
+            int deltaX = toX - fromX;
+            int deltaY = toY - fromY;
+            int topLeftX = -1;
+            int topLeftY = -1;
+
+            if ( (Mathf.Abs(deltaX) == 1 && deltaY == 0) || // Horizontal adjacency
+                (Mathf.Abs(deltaY) == 1 && deltaX == 0) )   // Vertical adjacency
+            {
+                
+                if ( deltaX == 0 ) {
+                    if ( deltaY == -1 ) { //upwards
+                        topLeftY = toY;
+                        topLeftX = toX;
+                    } else if ( deltaY == 1 ) { //downwards
+                        topLeftY = fromY;
+                        topLeftX = fromX - 1;
+                    }
+                } else if ( deltaY == 0 ) {
+                    if ( deltaX == -1 ) { // leftward
+                        topLeftY = fromY - 1;
+                        topLeftX = toX;
+                    } else if ( deltaX == 1 ) { // rightward
+                        topLeftY = fromY;
+                        topLeftX = fromX;
+                    }
+                }
+
+                // Check if the 2x2 square is within bounds
+                if ( topLeftX < 0 || topLeftX + 1 >= newBoard.Count ||
+                    topLeftY < 0 || topLeftY + 1 >= newBoard.Count ) {
+
+                    return Vector2Int.one * -1; ;
+                }
+            }
+               
+
+            return new Vector2Int(topLeftY, topLeftX);
+        }
+
         public List<List<Tile>> StartGame(int boardWidth, int boardHeight)        {
             _gameType = (GameType)PlayerPrefs.GetInt("GameMode", 3);
+            _matchMode = (MatchMode)PlayerPrefs.GetInt("MatchMode", 0);
 
             _tilesTypes = new List<int> { 0, 1, 2, 3 };
             _specialTypes = new List<int> { 4, 5, 6 };
@@ -86,11 +167,24 @@ namespace Gazeus.DesafioMatch3.Core {
             return _boardTiles;
         }
 
-        public List<BoardSequence> SwapTile(int fromX, int fromY, int toX, int toY)
-        {
+        public List<BoardSequence> SwapTile(int fromX, int fromY, int toX, int toY) {
             List<List<Tile>> newBoard = CopyBoard(_boardTiles);
 
-            (newBoard[toY][toX], newBoard[fromY][fromX]) = (newBoard[fromY][fromX], newBoard[toY][toX]);
+            switch ( _matchMode ) {
+                case MatchMode.Swap2:
+                    (newBoard[toY][toX], newBoard[fromY][fromX]) = (newBoard[fromY][fromX], newBoard[toY][toX]);
+                    break;
+                case MatchMode.Rotate4:
+                    Vector2Int topIndexes = GetTopLeftIndexes(newBoard, fromX, fromY, toX, toY);
+                    int topLeftX = topIndexes.y, topLeftY = topIndexes.x;
+
+                    (newBoard[topLeftY][topLeftX], newBoard[topLeftY + 1][topLeftX], newBoard[topLeftY + 1][topLeftX + 1], newBoard[topLeftY][topLeftX + 1]) =
+                    (newBoard[topLeftY + 1][topLeftX], newBoard[topLeftY + 1][topLeftX + 1], newBoard[topLeftY][topLeftX + 1], newBoard[topLeftY][topLeftX]);
+
+                    break;
+                default:
+                    break;
+            }           
 
             List<BoardSequence> boardSequences = new();
             List<List<bool>> matchedTiles = FindMatches(newBoard);
