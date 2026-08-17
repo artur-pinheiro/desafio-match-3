@@ -73,6 +73,7 @@ namespace Gazeus.DesafioMatch3.Controllers
                 }
                 else
                 {
+                    AudioController.Instance.PlaySfx(AudioController.SFXType.Move);
                     _isAnimating = true;
                     _boardView.SwapTiles(_selectedX, _selectedY, x, y).onComplete += () =>
                     {
@@ -81,6 +82,7 @@ namespace Gazeus.DesafioMatch3.Controllers
                             List<BoardSequence> swapResult = _gameService.SwapTile(_selectedX, _selectedY, x, y);
                             AnimateBoard(swapResult, 0, () => _isAnimating = false);
                         } else {
+                            AudioController.Instance.PlaySfx(AudioController.SFXType.Error);
                             _boardView.SwapTiles(x, y, _selectedX, _selectedY,true).onComplete += () => _isAnimating = false;
                         }
                         _selectedX = -1;

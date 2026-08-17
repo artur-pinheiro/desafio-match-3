@@ -80,6 +80,8 @@ namespace Gazeus.DesafioMatch3.Views
                 sequence.Join(tile.transform.DOScale(1.0f, 0.2f));
             }
 
+            AudioController.Instance.PlaySfx(AudioController.SFXType.Spawn);
+
             return sequence;
         }
 
@@ -102,6 +104,8 @@ namespace Gazeus.DesafioMatch3.Views
         private void SpawnParticles(Vector3 position) {
             _particlePool ??= GetComponent<ParticlePool>();
             _particlePool.SpawnParticle(position, Quaternion.Euler(0,180,0));
+
+            AudioController.Instance.PlaySfx(AudioController.SFXType.Break);
         }
 
         public Tween MoveTiles(List<MovedTileInfo> movedTiles)
@@ -131,6 +135,8 @@ namespace Gazeus.DesafioMatch3.Views
 
             _tiles = tiles;
 
+            AudioController.Instance.PlaySfx(AudioController.SFXType.Move);
+
             return sequence;
         }
 
@@ -154,8 +160,10 @@ namespace Gazeus.DesafioMatch3.Views
                         Vector2Int topIndexes = GetTopLeftIndexes(fromX, fromY, toX, toY);
                         int topLeftX = topIndexes.y, topLeftY = topIndexes.x;
 
-                        if ( topLeftX == -1 || topLeftY == -1 )
+                        if ( topLeftX < 0 || topLeftX + 1 >= _tiles.Length ||
+                            topLeftY < 0 || topLeftY + 1 >= _tiles.Length ) {
                             break;
+                        }
 
                         sequence.Append(_tileSpots[topLeftY][topLeftX].AnimatedSetTile(_tiles[topLeftY + 1][topLeftX]));
                         sequence.Join(_tileSpots[topLeftY + 1][topLeftX].AnimatedSetTile(_tiles[topLeftY + 1][topLeftX + 1]));
@@ -170,8 +178,10 @@ namespace Gazeus.DesafioMatch3.Views
                         Vector2Int topIndexes = GetTopLeftIndexes(toX, toY, fromX, fromY);
                         int topLeftX = topIndexes.y, topLeftY = topIndexes.x;
 
-                        if ( topLeftX == -1 || topLeftY == -1 )
+                        if ( topLeftX < 0 || topLeftX + 1 >= _tiles.Length ||
+                            topLeftY < 0 || topLeftY + 1 >= _tiles.Length ) {
                             break;
+                        }
 
                         sequence.Append(_tileSpots[topLeftY][topLeftX].AnimatedSetTile(_tiles[topLeftY][topLeftX + 1]));
                         sequence.Join(_tileSpots[topLeftY + 1][topLeftX].AnimatedSetTile(_tiles[topLeftY][topLeftX]));
@@ -218,7 +228,7 @@ namespace Gazeus.DesafioMatch3.Views
                         topLeftY = fromY;
                         topLeftX = fromX;
                     }
-                }
+                }                
 
                 return new Vector2Int(topLeftY, topLeftX);
             }
