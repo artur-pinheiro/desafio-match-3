@@ -267,6 +267,7 @@ GameObject:
   - component: {fileID: 36080750}
   - component: {fileID: 36080749}
   - component: {fileID: 36080751}
+  - component: {fileID: 36080752}
   m_Layer: 0
   m_Name: MenuController
   m_TagString: Untagged
@@ -314,6 +315,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DesafioMatch3::Gazeus.DesafioMatch3.MenuView
   _matchModeDropdown: {fileID: 1471776451}
+--- !u!114 &36080752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36080748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4867a76fa42b6ee4eb6d06a8730c8994, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DesafioMatch3::Gazeus.DesafioMatch3.SFXPlayer
+  sfx: 0
 --- !u!1 &360480350
 GameObject:
   m_ObjectHideFlags: 0
@@ -409,9 +423,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1736472668}
-        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.AudioController, DesafioMatch3
-        m_MethodName: PlayButtonClick
+      - m_Target: {fileID: 36080752}
+        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.SFXPlayer, DesafioMatch3
+        m_MethodName: PlayEffect
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -554,9 +568,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 1736472668}
-        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.AudioController, DesafioMatch3
-        m_MethodName: PlayButtonClick
+      - m_Target: {fileID: 36080752}
+        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.SFXPlayer, DesafioMatch3
+        m_MethodName: PlayEffect
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -699,9 +713,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1736472668}
-        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.AudioController, DesafioMatch3
-        m_MethodName: PlayButtonClick
+      - m_Target: {fileID: 36080752}
+        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.SFXPlayer, DesafioMatch3
+        m_MethodName: PlayEffect
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3254,9 +3268,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1736472668}
-        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.AudioController, DesafioMatch3
-        m_MethodName: PlayButtonClick
+      - m_Target: {fileID: 36080752}
+        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.SFXPlayer, DesafioMatch3
+        m_MethodName: PlayEffect
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4015,7 +4029,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 20
+  m_ScrollSensitivity: 25
   m_Viewport: {fileID: 2120568552}
   m_HorizontalScrollbar: {fileID: 1307151095}
   m_VerticalScrollbar: {fileID: 1823670573}
@@ -4234,9 +4248,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1736472668}
-        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.AudioController, DesafioMatch3
-        m_MethodName: PlayButtonClick
+      - m_Target: {fileID: 36080752}
+        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.SFXPlayer, DesafioMatch3
+        m_MethodName: PlayEffect
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

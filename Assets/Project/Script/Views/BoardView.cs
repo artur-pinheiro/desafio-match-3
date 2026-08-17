@@ -80,8 +80,7 @@ namespace Gazeus.DesafioMatch3.Views
                 sequence.Join(tile.transform.DOScale(1.0f, 0.2f));
             }
 
-            AudioController.Instance.PlaySfx(AudioController.SFXType.Spawn);
-
+            sequence.onPlay += () => AudioController.Instance.PlaySfx(AudioController.SFXType.Spawn);
             return sequence;
         }
 
@@ -96,16 +95,14 @@ namespace Gazeus.DesafioMatch3.Views
                 Destroy(_tiles[position.y][position.x]);
                 _tiles[position.y][position.x] = null;
                 EventSystem.OnTileDestroyed?.Invoke();
-                }
-
+            }
+            AudioController.Instance.PlaySfx(AudioController.SFXType.Break);
             return DOVirtual.DelayedCall(0.2f, () => { });
         }
 
         private void SpawnParticles(Vector3 position) {
             _particlePool ??= GetComponent<ParticlePool>();
             _particlePool.SpawnParticle(position, Quaternion.Euler(0,180,0));
-
-            AudioController.Instance.PlaySfx(AudioController.SFXType.Break);
         }
 
         public Tween MoveTiles(List<MovedTileInfo> movedTiles)
@@ -134,9 +131,7 @@ namespace Gazeus.DesafioMatch3.Views
             }
 
             _tiles = tiles;
-
-            AudioController.Instance.PlaySfx(AudioController.SFXType.Move);
-
+            sequence.onPlay += () => AudioController.Instance.PlaySfx(AudioController.SFXType.Move);
             return sequence;
         }
 

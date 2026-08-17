@@ -47,9 +47,18 @@ namespace Gazeus.DesafioMatch3 {
             sequence.Append(DOTween.To(() => _tileText.color.a, x => _tileText.color = new Color(_originalColor.r, _originalColor.g, _originalColor.b, x), 0f, _fadeDuration));
             sequence.Join(_tileText.transform.DOScale(_originalScale, _scaleDuration));
 
-            sequence.onComplete += () => { _brokenTiles = 0; };
+            sequence.onComplete += InvokeReset;
 
         }
+
+        private void InvokeReset() {
+            Invoke(nameof(ResetTileCounter), 2f);
+        }
+
+        private void ResetTileCounter() {
+            _brokenTiles = 0;
+        }
+
 
         public void StopAnimation() {
             DOTween.Kill(_tileText);

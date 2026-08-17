@@ -1078,6 +1078,7 @@ GameObject:
   - component: {fileID: 1361904665}
   - component: {fileID: 1361904664}
   - component: {fileID: 1361904666}
+  - component: {fileID: 1361904667}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -1128,6 +1129,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DesafioMatch3::Gazeus.DesafioMatch3.ScoreController
   _scorePerTile: 10
+--- !u!114 &1361904667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1361904663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4867a76fa42b6ee4eb6d06a8730c8994, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DesafioMatch3::Gazeus.DesafioMatch3.SFXPlayer
+  sfx: 0
 --- !u!1 &1542963686
 GameObject:
   m_ObjectHideFlags: 0
@@ -1215,6 +1229,18 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.Controllers.GameController,
           DesafioMatch3
         m_MethodName: QuitGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1361904667}
+        m_TargetAssemblyTypeName: Gazeus.DesafioMatch3.SFXPlayer, DesafioMatch3
+        m_MethodName: PlayEffect
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
